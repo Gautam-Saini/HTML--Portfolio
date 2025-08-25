@@ -1,23 +1,555 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>My Personal Portfolio</title>
-    </head>
-    <hr>
-        <h1> Gautam Saini's Portfolio</h1>
-        <h2>Im a Web developer</h2>
-        <hr/>
-        <a href="./public/movie-ranking.html">Movie Ranking Project </a>
-        <br/>
-        <img src="./assets/images/movie-ranking.png" height="200" alt="Movie movie-ranking">
-        <br/>
-        <a href="./public/birthday-invite.html">Birthday invite </a>
-        <br/>
-        <img src="./assets/images/birthday-invite.png" height="200" alt="birthday-invite">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoalTracker — your daily wins</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,0.06);
+      --panel-2: rgba(255,255,255,0.08);
+      --muted: #9aa3b2;
+      --brand: #6ee7ff;
+      --brand-2: #a78bfa;
+      --success: #34d399;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      --shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji','Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+      color:#e5e9f0;
+      background: radial-gradient(1200px 1200px at 10% -10%, #1d2240 0%, transparent 60%),
+                  radial-gradient(1200px 1200px at 90% 110%, #1a2a44 0%, transparent 60%),
+                  var(--bg);
+      overflow:hidden;
+    }
+    /* ------- Shared UI ------- */
+    .hidden{display:none !important}
+    .btn{
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color:#0b1020; font-weight:700; border:none; padding:12px 16px; border-radius: 14px; cursor:pointer;
+      transition: transform .08s ease, filter .2s ease; box-shadow: var(--shadow);
+    }
+    .btn:active{ transform: translateY(1px) scale(.99); }
+    .btn.secondary{ background:rgba(255,255,255,.06); color:#e5e9f0; font-weight:600; }
+    .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,.12); color:#e5e9f0 }
+    .chip{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.06); font-size:12px; color:#cfd6e3 }
+    .badge{ padding:4px 8px; border-radius:999px; font-size:11px; background:rgba(255,255,255,.08); color:#cfd6e3; }
+    input, textarea, select{
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); color:#e5e9f0; border-radius:12px; padding:12px 14px; outline:none;
+      width:100%; box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    input::placeholder, textarea::placeholder{ color:#8b93a6 }
+    .card{ background:var(--panel); backdrop-filter: blur(10px); border-radius: var(--radius-xl); box-shadow: var(--shadow); border:1px solid rgba(255,255,255,.08); }
+    .hover-up{ transition: transform .18s ease, box-shadow .2s ease; }
+    .hover-up:hover{ transform: translateY(-2px); }
+    .row{ display:flex; gap:16px; align-items:center }
+    .col{ display:flex; flex-direction:column; gap:12px }
 
-        <hr/>
-        <h3><a href="./public/about.html">About</a> <br> <a href="./public/contact.html">Contact</a></h3>
-    </body>
+    .app{
+      display:grid; grid-template-columns: 320px 1fr 380px; gap:18px; height:100vh; padding:18px; max-width:1400px; margin:0 auto;
+    }
+    @media (max-width: 1100px){ .app{ grid-template-columns: 280px 1fr; } #activity{ display:none } }
+    @media (max-width: 820px){ body{ overflow:auto } .app{ grid-template-columns: 1fr; height:auto } #sidebar{ order:2 } #main{ order:1 } }
+
+    /* ------- Auth ------- */
+    #auth{
+      position:fixed; inset:0; display:grid; place-items:center; padding:22px; z-index:10;
+      background:
+       radial-gradient(1600px 800px at 10% 10%, rgba(167,139,250,.15), transparent 60%),
+       radial-gradient(1600px 1000px at 90% 90%, rgba(110,231,255,.15), transparent 60%),
+       var(--bg);
+    }
+    .auth-card{ width: 980px; max-width:100%; display:grid; grid-template-columns: 1.1fr 1fr; }
+    @media (max-width: 900px){ .auth-card{ grid-template-columns: 1fr } .auth-hero{ display:none } }
+    .auth-hero{ position:relative; padding:28px; overflow:hidden }
+    .hero-bg{ position:absolute; inset:0; background: radial-gradient(600px 400px at 20% 10%, rgba(110,231,255,.10), transparent 60%),
+      radial-gradient(800px 500px at 90% 90%, rgba(167,139,250,.16), transparent 60%);
+      filter:saturate(110%);
+    }
+    .sparkle{ position:absolute; width:240px; height:240px; border-radius:50%; background: radial-gradient(circle at 30% 30%, rgba(110,231,255,.4), rgba(167,139,250,.25) 40%, transparent 60%); filter: blur(24px); animation: float 8s ease-in-out infinite; }
+    .sparkle.s2{ left:auto; right:-60px; top:auto; bottom:-60px; animation-delay: -3s }
+    @keyframes float{ 0%,100%{ transform: translateY(0)} 50%{ transform: translateY(-14px)} }
+    .auth-panel{ padding:34px }
+    .brand{ font-weight:900; letter-spacing:.6px; font-size:22px; display:flex; align-items:center; gap:10px }
+    .brand i{ width:12px; height:12px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); display:inline-block; border-radius:3px; box-shadow: 0 0 0 3px rgba(255,255,255,.06) inset }
+
+    .title-xl{ font-size:36px; font-weight:800; margin:14px 0 6px }
+    .subtitle{ color:var(--muted); line-height:1.4; font-size:14px }
+
+    .auth-form{ margin-top:26px; display:flex; flex-direction:column; gap:12px }
+
+    .divider{ display:flex; align-items:center; gap:12px; color:#b8c0d0; margin:12px 0 }
+    .divider::before, .divider::after{ content:""; height:1px; flex:1; background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.14), rgba(255,255,255,.04)) }
+
+    .link{ color:#c9d4ff; text-decoration:underline; cursor:pointer }
+
+    /* ------- App Layout ------- */
+    #sidebar{ padding:16px; }
+    #main{ padding:16px; }
+    #activity{ padding:16px; }
+
+    .panel{ padding:16px; }
+
+    .header{ display:flex; align-items:center; justify-content:space-between; }
+
+    .search{ display:flex; gap:10px; align-items:center }
+    .search input{ width:280px }
+
+    .goal-item, .todo-item{
+      display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:var(--panel-2); border:1px solid rgba(255,255,255,.06);
+    }
+    .goal-item.done, .todo-item.done{ opacity:.65; text-decoration: line-through; }
+
+    .list{ display:flex; flex-direction:column; gap:10px }
+
+    .section-title{ font-size:14px; color:#bfc7d6; letter-spacing:.6px; text-transform:uppercase; margin:12px 0 8px }
+
+    .calendar{ display:flex; gap:10px; align-items:center }
+    .calendar input{ width:auto }
+
+    .tag{ font-size:11px; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,.08); color:#cfd6e3 }
+
+    .scroll{ overflow:auto; max-height: calc(100vh - 120px) }
+
+    .empty{ text-align:center; color:#9aa3b2; padding:24px 10px; border:1px dashed rgba(255,255,255,.1); border-radius:14px }
+
+    .kpi{ display:grid; grid-template-columns: repeat(3, 1fr); gap:14px }
+    .kpi .card{ padding:16px }
+    .kpi .value{ font-size:28px; font-weight:800 }
+
+    .switch{ position:relative; width:44px; height:26px; background:rgba(255,255,255,.12); border-radius:999px; cursor:pointer; transition:.2s; }
+    .switch i{ position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:.2s }
+    .switch.on{ background:linear-gradient(135deg, var(--brand), var(--brand-2)); }
+    .switch.on i{ transform: translateX(18px); }
+
+    .footer-note{ color:#94a3b8; font-size:12px; margin-top:6px }
+  </style>
+</head>
+<body>
+  <!-- ===================== AUTH ===================== -->
+  <div id="auth">
+    <div class="card auth-card hover-up">
+      <div class="auth-hero">
+        <div class="hero-bg"></div>
+        <div class="sparkle" style="left:-60px; top:-60px"></div>
+        <div class="sparkle s2"></div>
+        <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column; justify-content:space-between">
+          <div class="brand"><i></i> GoalTracker</div>
+          <div>
+            <div class="title-xl">Build streaks. Crush goals.</div>
+            <div class="subtitle">Login to your personalized dashboard. Create daily goals, auto‑populate your must‑do routine, and track every action with precise dates — all stored locally on your device for zero‑lag performance.</div>
+            <div class="row" style="gap:10px; margin-top:16px">
+              <span class="chip">⚡ Offline‑ready</span>
+              <span class="chip">🧠 Smart daily routine</span>
+              <span class="chip">📅 Full activity history</span>
+            </div>
+          </div>
+          <div class="footer-note">Tip: Try demo account — <b>demo@goal.com</b> / <b>demo123</b></div>
+        </div>
+      </div>
+      <div class="auth-panel panel">
+        <div class="brand"><i></i> GoalTracker</div>
+        <div class="title-xl">Welcome back</div>
+        <div class="subtitle">Sign in or create a new account.</div>
+        <form id="loginForm" class="auth-form" autocomplete="on">
+          <input id="email" type="email" placeholder="Email" required />
+          <input id="password" type="password" placeholder="Password" minlength="6" required />
+          <button class="btn" type="submit">Sign in</button>
+        </form>
+        <div class="divider">or</div>
+        <form id="signupForm" class="auth-form" autocomplete="on">
+          <input id="name" type="text" placeholder="Your name" required />
+          <input id="email2" type="email" placeholder="Email" required />
+          <input id="password2" type="password" placeholder="Password (min 6 chars)" minlength="6" required />
+          <button class="btn secondary" type="submit">Create account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== APP ===================== -->
+  <div id="app" class="app hidden">
+    <!-- ===== Sidebar ===== -->
+    <aside id="sidebar" class="card">
+      <div class="panel">
+        <div class="row" style="justify-content:space-between">
+          <div class="row" style="gap:10px">
+            <div style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg, var(--brand), var(--brand-2)); box-shadow:var(--shadow)"></div>
+            <div>
+              <div id="hello" style="font-weight:800"></div>
+              <div id="emailLabel" style="font-size:12px; color:var(--muted)"></div>
+            </div>
+          </div>
+          <button id="logoutBtn" class="btn ghost" title="Log out">⎋</button>
+        </div>
+
+        <div class="section-title">Today</div>
+        <div class="calendar row">
+          <input id="datePicker" type="date" />
+          <span class="badge" id="streak">Streak: 0🔥</span>
+        </div>
+
+        <div class="section-title">Quick add — daily goal</div>
+        <div class="row">
+          <input id="newDailyText" type="text" placeholder="e.g., Read 20 pages" />
+          <button id="addDailyBtn" class="btn" title="Add daily goal">＋</button>
+        </div>
+
+        <div class="section-title">Must‑do (everyday)</div>
+        <div id="mustdoList" class="list"></div>
+        <div class="row" style="margin-top:10px">
+          <input id="newMustdoText" type="text" placeholder="Add a routine task" />
+          <button id="addMustdoBtn" class="btn secondary" title="Add to routine">＋</button>
+        </div>
+        <div class="footer-note">These auto‑appear every day. Mark them done to build streaks.</div>
+      </div>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main id="main" class="card">
+      <div class="panel">
+        <div class="header">
+          <div class="row">
+            <h2 style="margin:0">Your day at a glance</h2>
+          </div>
+          <div class="search">
+            <input id="search" placeholder="Search goals & activity…" />
+          </div>
+        </div>
+
+        <div class="kpi" style="margin:16px 0 8px">
+          <div class="card">
+            <div class="badge">Today</div>
+            <div class="value" id="kpiTodayDone">0</div>
+            <div class="subtitle">items completed</div>
+          </div>
+          <div class="card">
+            <div class="badge">This week</div>
+            <div class="value" id="kpiWeekDone">0</div>
+            <div class="subtitle">items completed</div>
+          </div>
+          <div class="card">
+            <div class="badge">All‑time</div>
+            <div class="value" id="kpiAllDone">0</div>
+            <div class="subtitle">items completed</div>
+          </div>
+        </div>
+
+        <div class="row" style="align-items:flex-start">
+          <!-- Today's List -->
+          <div style="flex:1">
+            <div class="section-title">Today's checklist</div>
+            <div id="todayList" class="list"></div>
+            <div class="empty" id="emptyToday" style="display:none">No tasks yet. Add a daily goal or customize your must‑do list.</div>
+          </div>
+
+          <!-- Long‑term Goals -->
+          <div style="width:380px">
+            <div class="section-title">Long‑term goals</div>
+            <div class="row" style="margin-bottom:10px">
+              <input id="newGoalText" placeholder="e.g., Run a marathon" />
+              <button id="addGoalBtn" class="btn" title="Add goal">＋</button>
+            </div>
+            <div id="goalList" class="list"></div>
+            <div class="empty" id="emptyGoals" style="display:none">No goals yet. Add your first big milestone.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ===== Activity ===== -->
+    <aside id="activity" class="card">
+      <div class="panel">
+        <div class="row" style="justify-content:space-between">
+          <div class="section-title" style="margin:0">Activity</div>
+          <div class="row">
+            <span class="tag">All</span>
+            <span class="tag">Adds</span>
+            <span class="tag">Completions</span>
+          </div>
+        </div>
+        <div id="activityList" class="scroll" style="margin-top:10px; display:flex; flex-direction:column; gap:8px"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // =============== Utilities ===============
+    const $ = (sel) => document.querySelector(sel);
+    const el = (tag, cls, html) => { const e = document.createElement(tag); if(cls) e.className = cls; if(html!=null) e.innerHTML = html; return e };
+    const todayStr = (d = new Date()) => d.toISOString().slice(0,10);
+    const isoNow = () => new Date().toISOString();
+
+    async function hash(str){
+      const enc = new TextEncoder().encode(str);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    function uid(){ return Math.random().toString(36).slice(2, 10) }
+
+    function loadDB(){
+      const raw = localStorage.getItem('gt.db');
+      if(raw) return JSON.parse(raw);
+      // seed with demo account once
+      const demo = {
+        users: {
+          'demo@goal.com': {
+            name: 'Demo User',
+            email: 'demo@goal.com',
+            pass: 'f2e6bb8c8f54f2f5a6a6a8f5a8b1f2c2', // placeholder (not used)
+            passHash: '',
+            mustdo: ['Hydrate (8 glasses)', '10-min mobility', 'Plan tomorrow', 'Practice English 20 min'],
+            todosByDate: {},
+            goals: [],
+            activity: []
+          }
+        },
+        session: null
+      };
+      localStorage.setItem('gt.db', JSON.stringify(demo));
+      return demo;
+    }
+
+    function saveDB(db){ localStorage.setItem('gt.db', JSON.stringify(db)) }
+
+    function getUser(db, email){ return db.users[email] }
+
+    function ensureTodayTodos(user, date){
+      user.todosByDate ||= {};
+      user.todosByDate[date] ||= [];
+      const existing = user.todosByDate[date];
+      const have = new Set(existing.filter(t=>t.type==='mustdo').map(t=>t.text));
+      const toAdd = user.mustdo.filter(m=>!have.has(m));
+      for(const m of toAdd){
+        existing.push({ id: uid(), text: m, type:'mustdo', completed:false, createdAt: isoNow(), completedAt:null });
+      }
+      return existing;
+    }
+
+    function log(user, action, details){
+      user.activity.unshift({ id: uid(), time: isoNow(), action, details });
+      // Cap history to 2k events to avoid unbounded growth
+      if(user.activity.length > 2000) user.activity.length = 2000;
+    }
+
+    function streakFor(user){
+      // Count consecutive days with all must-do completed
+      const dates = Object.keys(user.todosByDate||{}).sort();
+      let streak=0;
+      let d = new Date();
+      for(;;){
+        const key = todayStr(d);
+        const list = user.todosByDate?.[key]||[];
+        const must = list.filter(t=>t.type==='mustdo');
+        const allDone = must.length>0 && must.every(t=>t.completed);
+        if(allDone){ streak++; d.setDate(d.getDate()-1); } else break;
+      }
+      return streak;
+    }
+
+    function weekRange(date){
+      const d = new Date(date);
+      const day = (d.getDay()+6)%7; // make Monday=0
+      const start = new Date(d); start.setDate(d.getDate()-day);
+      const dates = Array.from({length:7}, (_,i)=>{ const x=new Date(start); x.setDate(start.getDate()+i); return todayStr(x) });
+      return dates;
+    }
+
+    // =============== State ===============
+    let db = loadDB();
+    let user = null;
+    let currentDate = todayStr();
+
+    // =============== Auth ===============
+    async function signIn(email, password){
+      const u = getUser(db, email);
+      if(!u) return false;
+      const ph = await hash(password);
+      if(u.passHash && u.passHash !== ph) return false;
+      if(!u.passHash){ // first time for demo
+        u.passHash = ph;
+      }
+      db.session = { email };
+      saveDB(db);
+      user = u; return true;
+    }
+
+    async function signUp(name, email, password){
+      if(db.users[email]) throw new Error('User already exists');
+      const ph = await hash(password);
+      db.users[email] = { name, email, passHash: ph, mustdo: ['Hydrate (8 glasses)','10‑min mobility','Plan tomorrow'], todosByDate:{}, goals:[], activity:[] };
+      saveDB(db);
+      return true;
+    }
+
+    function signOut(){ db.session=null; saveDB(db); user=null; showAuth() }
+
+    // =============== Rendering ===============
+    function showAuth(){
+      $('#auth').classList.remove('hidden');
+      $('#app').classList.add('hidden');
+    }
+    function showApp(){
+      $('#auth').classList.add('hidden');
+      $('#app').classList.remove('hidden');
+      $('#hello').textContent = `Hey, ${user.name}`;
+      $('#emailLabel').textContent = user.email;
+      $('#datePicker').value = currentDate;
+      refreshAll();
+    }
+
+    function renderMustdo(){
+      const wrap = $('#mustdoList');
+      wrap.innerHTML = '';
+      for(const m of user.mustdo){
+        const row = el('div','todo-item');
+        const del = el('button','btn ghost','✕'); del.style.padding='6px 10px';
+        del.onclick = ()=>{ user.mustdo = user.mustdo.filter(x=>x!==m); ensureTodayTodos(user, currentDate); log(user,'Removed routine',{text:m}); saveDB(db); refreshAll() };
+        row.append(el('span','badge','Everyday'), el('div',null,m), el('div',{style:'flex:1'}), del);
+        wrap.append(row);
+      }
+    }
+
+    function renderToday(){
+      const list = ensureTodayTodos(user, currentDate);
+      const wrap = $('#todayList'); wrap.innerHTML='';
+      const empty = $('#emptyToday'); empty.style.display = list.length? 'none' : 'block';
+      for(const t of list){
+        const row = el('div','todo-item'+(t.completed?' done':''));
+        const cb = el('input'); cb.type='checkbox'; cb.checked = !!t.completed;
+        cb.onchange = ()=>{
+          t.completed = cb.checked; t.completedAt = cb.checked ? isoNow() : null;
+          log(user, cb.checked? 'Completed' : 'Uncompleted', {text:t.text, type:t.type, date: currentDate});
+          saveDB(db); refreshKPIs(); renderActivity();
+          row.classList.toggle('done', !!t.completed);
+        };
+        const type = el('span','badge', t.type==='mustdo'? 'Routine' : 'Daily');
+        const txt = el('div',null, t.text);
+        const del = el('button','btn ghost','✕'); del.style.padding='6px 10px';
+        del.onclick = ()=>{ user.todosByDate[currentDate] = user.todosByDate[currentDate].filter(x=>x.id!==t.id); log(user,'Deleted item',{text:t.text}); saveDB(db); refreshAll() };
+        row.append(cb, type, txt, el('div',null,''));
+        row.append(del);
+        wrap.append(row);
+      }
+    }
+
+    function renderGoals(){
+      const wrap = $('#goalList'); wrap.innerHTML='';
+      const gs = user.goals;
+      $('#emptyGoals').style.display = gs.length? 'none' : 'block';
+      for(const g of gs){
+        const row = el('div','goal-item'+(g.completedAt?' done':''));
+        const cb = el('input'); cb.type='checkbox'; cb.checked = !!g.completedAt;
+        cb.onchange = ()=>{ g.completedAt = cb.checked ? isoNow() : null; log(user, cb.checked? 'Completed goal' : 'Reopened goal', {title:g.title}); saveDB(db); refreshKPIs(); renderActivity(); row.classList.toggle('done', !!g.completedAt) };
+        const txt = el('div',null, g.title);
+        const del = el('button','btn ghost','✕'); del.style.padding='6px 10px';
+        del.onclick = ()=>{ user.goals = user.goals.filter(x=>x.id!==g.id); log(user,'Deleted goal',{title:g.title}); saveDB(db); refreshAll() };
+        row.append(cb, el('span','badge','Goal'), txt, el('div',{style:'flex:1'}), del);
+        wrap.append(row);
+      }
+    }
+
+    function renderActivity(){
+      const wrap = $('#activityList'); wrap.innerHTML='';
+      const q = ($('#search').value||'').toLowerCase();
+      for(const a of user.activity){
+        const txt = JSON.stringify(a).toLowerCase(); if(q && !txt.includes(q)) continue;
+        const row = el('div','goal-item');
+        const when = new Date(a.time).toLocaleString();
+        let icon = '🟣';
+        if(a.action.includes('Completed')) icon = '🟢';
+        if(a.action.includes('Deleted')) icon = '🔴';
+        if(a.action.includes('Removed')) icon = '🟠';
+        row.innerHTML = `<span class="badge">${icon}</span><div><div style="font-weight:700">${a.action}</div><div class="subtitle">${when}</div></div><div style="flex:1"></div><div class="subtitle">${a.details?.text||a.details?.title||''}</div>`
+        wrap.append(row);
+      }
+    }
+
+    function refreshKPIs(){
+      const today = user.todosByDate[currentDate]||[];
+      const todayDone = today.filter(t=>t.completed).length;
+      $('#kpiTodayDone').textContent = todayDone;
+
+      // week
+      const week = weekRange(currentDate);
+      let weekDone=0; for(const d of week){ const list = user.todosByDate[d]||[]; weekDone += list.filter(t=>t.completed).length; }
+      $('#kpiWeekDone').textContent = weekDone;
+
+      // all-time
+      let all=0; for(const d in user.todosByDate){ all += (user.todosByDate[d]||[]).filter(t=>t.completed).length }
+      $('#kpiAllDone').textContent = all;
+
+      $('#streak').textContent = `Streak: ${streakFor(user)}🔥`;
+    }
+
+    function refreshAll(){ renderMustdo(); renderToday(); renderGoals(); renderActivity(); refreshKPIs() }
+
+    // =============== Events ===============
+    $('#addDailyBtn').onclick = ()=>{
+      const txt = $('#newDailyText').value.trim(); if(!txt) return;
+      user.todosByDate[currentDate] ||= [];
+      user.todosByDate[currentDate].unshift({ id: uid(), text: txt, type:'daily', completed:false, createdAt: isoNow(), completedAt:null });
+      $('#newDailyText').value=''; log(user,'Added daily',{text:txt}); saveDB(db); refreshAll();
+    };
+
+    $('#addMustdoBtn').onclick = ()=>{
+      const txt = $('#newMustdoText').value.trim(); if(!txt) return;
+      if(!user.mustdo.includes(txt)) user.mustdo.push(txt);
+      $('#newMustdoText').value=''; ensureTodayTodos(user, currentDate); log(user,'Added routine',{text:txt}); saveDB(db); refreshAll();
+    };
+
+    $('#addGoalBtn').onclick = ()=>{
+      const txt = $('#newGoalText').value.trim(); if(!txt) return;
+      user.goals.unshift({ id: uid(), title: txt, createdAt: isoNow(), completedAt:null });
+      $('#newGoalText').value=''; log(user,'Added goal',{title:txt}); saveDB(db); refreshAll();
+    };
+
+    $('#datePicker').onchange = (e)=>{ currentDate = e.target.value || todayStr(); ensureTodayTodos(user, currentDate); refreshAll() };
+
+    $('#logoutBtn').onclick = ()=> signOut();
+    $('#search').oninput = ()=> renderActivity();
+
+    // Auth forms
+    $('#loginForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const email = $('#email').value.trim().toLowerCase();
+      const pass = $('#password').value;
+      const ok = await signIn(email, pass);
+      if(!ok){ alert('Invalid credentials'); return }
+      currentDate = todayStr(); ensureTodayTodos(user, currentDate); saveDB(db); showApp();
+    });
+
+    $('#signupForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = $('#name').value.trim();
+      const email = $('#email2').value.trim().toLowerCase();
+      const pass = $('#password2').value;
+      try{ await signUp(name, email, pass); alert('Account created! You can now sign in.'); } catch(err){ alert(err.message) }
+    });
+
+    // =============== Session restore ===============
+    (async function init(){
+      // load stored session
+      if(db.session?.email && db.users[db.session.email]){
+        user = db.users[db.session.email];
+        currentDate = todayStr(); ensureTodayTodos(user, currentDate); showApp();
+      } else {
+        showAuth();
+      }
+    })();
+  </script>
+</body>
 </html>
